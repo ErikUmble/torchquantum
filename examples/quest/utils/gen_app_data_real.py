@@ -26,7 +26,7 @@ import os
 import pickle
 from qiskit import QuantumCircuit
 
-# from qiskit.providers.fake_provider import *
+# from qiskit_ibm_runtime.fake_provider importrt *
 from .rand_circ_native import *
 from qiskit import IBMQ, transpile
 import sys
@@ -60,7 +60,7 @@ for file_name in files:
         # ini_backend = FakeGuadalupe()
         continue
     else:
-        # ini_backend = FakeJakarta()
+        # ini_backend = FakeJakartaV2()
         backend = IBMQ_ini(sys.argv[1])
 
     for i in range(50):

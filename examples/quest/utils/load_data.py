@@ -29,7 +29,10 @@ import sys
 import torch
 from qiskit import QuantumCircuit
 from torchpack.utils.config import configs
-from utils.circ_dag_converter import circ_to_dag_with_data
+try:
+    from utils.circ_dag_converter import circ_to_dag_with_data
+except:
+    from circ_dag_converter import circ_to_dag_with_data
 
 
 def load_data_from_raw(file_name):
@@ -116,13 +119,19 @@ def load_data_and_save(file_name):
     pickle.dump(pyg_data, file)
     file.close()
 
+def num_used_qubits(circuit):
+    return len(set([q for instr in circuit.data for q in instr.qubits]))
 
 def raw_pyg_converter(dataset):
     pygdataset = []
     for data in dataset:
         circ = QuantumCircuit()
         circ = circ.from_qasm_str(data[0])
-        dag = circ_to_dag_with_data(circ, data[1])
+        try:
+            dag = circ_to_dag_with_data(circ, data[1])
+        except Exception as e:
+            print(f"Error processing circuit: {e} (circuit has {num_used_qubits(circ)} qubits)")
+            continue
         dag.y = data[2]
         pygdataset.append(dag)
     return pygdataset

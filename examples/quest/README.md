@@ -37,3 +37,21 @@ Torch-geometric == 2.2.0
 Qiskit == 0.39.4
 Python == 3.10.8
 ```
+
+## Test Trained Model on New Data
+1. Collect data into a list of tuples of the form
+```
+(circuit_qasm2_string, backend.properties().to_dict(), fidelity)
+```
+such as using `create_quest_dataset.ipynb`.
+
+2. Pickle the list and save file to `./data/raw_data_qasm/`.
+
+3. Run `utils/load_data.py` to convert data into pytorch graph form
+```
+python ./utils/load_data.py data_filename
+```
+
+4. Create config directory within `exp`, such as the example `exp/erik` with `config.yaml` in it.
+
+5. Run `python test.py config_dir_name`.

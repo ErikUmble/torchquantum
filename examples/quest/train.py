@@ -65,6 +65,9 @@ def main() -> None:
     elif configs.device == "cpu":
         device = torch.device("cpu")
 
+    # Erik: use CPU since no nvidia gpu available
+    device = torch.device("cpu")
+
     if isinstance(configs.optimizer.lr, str):
         configs.optimizer.lr = eval(configs.optimizer.lr)
     args.run_dir = auto_set_run_dir()

@@ -104,7 +104,7 @@ class trainer:
         torch.save(mydict, f"exp/{configs.exp_name}/all.pth")
 
     def loadall(self):
-        mydict = torch.load(f"exp/{configs.exp_name}/all.pth")
+        mydict = torch.load(f"exp/{configs.exp_name}/all.pth", weights_only=False)
         self.training_data["train_loss"] = mydict["train_loss"]
         self.training_data["val_error"] = mydict["val_error"]
         self.training_data["test_pred"] = mydict["test_pred"]
@@ -120,7 +120,7 @@ class trainer:
         self.test_error = 0
         print(len(self.loaders["test"].dataset))
         if len(self.loaders["test"].dataset) > 1:
-            self.model.load_state_dict(torch.load(f"exp/{configs.exp_name}/model.pth"))
+            self.model.load_state_dict(torch.load(f"exp/{configs.exp_name}/model.pth", weights_only=False))
             self.model.eval()
             test_error = 0
             for batch in self.loaders["test"]:

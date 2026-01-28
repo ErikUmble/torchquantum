@@ -25,7 +25,7 @@ SOFTWARE.
 import os
 import pickle
 from qiskit import QuantumCircuit
-from qiskit.providers.fake_provider import *
+from qiskit_ibm_runtime.fake_provider import *
 from .rand_circ_native import *
 from copy import deepcopy
 
@@ -68,7 +68,7 @@ for file_name in files:
         ini_backend = FakeGuadalupe()
         continue
     else:
-        ini_backend = FakeJakarta()
+        ini_backend = FakeJakartaV2()
 
     circ_app.remove_final_measurements()
     transpiled = transpile(circ_app, ini_backend)

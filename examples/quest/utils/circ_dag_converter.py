@@ -30,15 +30,13 @@ from qiskit import QuantumCircuit
 from qiskit.compiler import transpile
 from qiskit.converters import circuit_to_dag
 from qiskit.dagcircuit import DAGInNode, DAGOpNode, DAGOutNode
-from qiskit.providers.aer import AerSimulator
-from qiskit.providers.fake_provider import FakeJakarta, FakeLima
+from qiskit_ibm_runtime.fake_provider import FakeJakartaV2
 from qiskit.transpiler.passes import RemoveBarriers
 from torch_geometric.utils.convert import from_networkx
 
-GATE_DICT = {"rz": 0, "x": 1, "sx": 2, "cx": 3}
+GATE_DICT = {"rz": 0, "x": 1, "sx": 2, "cx": 3, "ecr": 3}  # Erik: since GATE_DICT did not include ecr, we'll assume a 1-1 mapping from ecr to cx for the mapping purposes and ignore measure/identity gates
 NUM_ERROR_DATA = 7
-NUM_NODE_TYPE = 2 + len(GATE_DICT)
-
+NUM_NODE_TYPE = 2 + len(set(GATE_DICT.values()))  # Erik: only count the distinc gate types from GATE_DICT
 
 def get_global_features(circ):
     data = torch.zeros((1, 6))
@@ -50,14 +48,25 @@ def get_global_features(circ):
 
     return data
 
+def dag_to_networkx(dag: "DAGCircuit") -> nx.DiGraph:
+    """Convert a Qiskit DAGCircuit to a NetworkX DiGraph."""
+    G = nx.DiGraph()
+    
+    for node in dag.topological_nodes():
+        G.add_node(node)
+    
+    for edge in dag.edges():
+        G.add_edge(edge[0], edge[1])
+    
+    return G
 
-def circ_to_dag_with_data(circ, mydict, n_qubit=10):
+def circ_to_dag_with_data(circ, mydict, n_qubit=10):  # Erik: note that n_qubit is set to 10 - the trained model only supports circuits with up to 10 qubits
     # data format: [node_type(onehot)]+[qubit_idx(one or two-hot)]+[T1,T2,T1,T2,gate error,roerror,roerror]+[gate_idx]
     circ = circ.copy()
     circ = RemoveBarriers()(circ)
 
     dag = circuit_to_dag(circ)
-    dag = dag.to_networkx()
+    dag = dag_to_networkx(dag)  # Erik: change to custom function since qiskit dag.to_networkx is removed
     dag_list = list(dag.nodes())
     used_qubit_idx_list = {}
     used_qubit_idx = 0
@@ -154,7 +163,11 @@ def data_generator(node, mydict):
         for qubit in qargs:
             qubit_list.append(qubit._index)
         mylist = [mydict["qubit"][qubit_idx] for qubit_idx in qubit_list]
-        mylist.append(mydict["gate"][tuple(qubit_list)][name])
+        if name in GATE_DICT:
+            # Erik: only add gate error for gates definded in GATE_DICT, assume 0.0 noise for others (identity, measure, etc)
+            mylist.append(mydict["gate"][tuple(qubit_list)][name])
+        else:
+            mylist.append(0.0)
         return (name, qubit_list, mylist)
     else:
         raise NotImplementedError("Unknown node type")
@@ -201,7 +214,7 @@ def build_my_noise_dict(prop):
 
 
 def main():
-    backend = FakeJakarta()
+    backend = FakeJakartaV2()
     props = backend.properties().to_dict()
     mydict = build_my_noise_dict(props)
     circ = QuantumCircuit(3)

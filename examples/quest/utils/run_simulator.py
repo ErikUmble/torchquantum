@@ -30,8 +30,8 @@ from circ_dag_converter import GATE_DICT, build_my_noise_dict, noise_model_test
 from qiskit import QuantumCircuit
 from qiskit.compiler import assemble
 from qiskit.dagcircuit import DAGInNode, DAGOpNode, DAGOutNode
-from qiskit.providers.aer import AerSimulator
-from qiskit.providers.fake_provider import FakeJakarta, FakeLima
+from qiskit_aer import AerSimulator
+from qiskit_ibm_runtime.fake_provider import FakeJakartaV2
 from qiskit.providers.models import BackendProperties
 
 # prop is an input from circ_dag_converter
@@ -99,7 +99,7 @@ def run_simulation(my_dict, native_circ, mapping_info):
 
 
 def main():
-    backend = FakeJakarta()
+    backend = FakeJakartaV2()
     noise_model_test(backend)
     mydict = build_my_noise_dict(backend.properties().to_dict())
     new_mydict = get_randomized_mydict(mydict)

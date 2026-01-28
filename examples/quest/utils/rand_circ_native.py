@@ -35,8 +35,8 @@ from circ_dag_converter import GATE_DICT, build_my_noise_dict
 from qiskit import QuantumCircuit, transpile
 from qiskit.compiler import assemble
 from qiskit.dagcircuit import DAGInNode, DAGOpNode, DAGOutNode
-from qiskit.providers.aer import AerSimulator
-from qiskit.providers.fake_provider import *
+from qiskit_aer import AerSimulator
+from qiskit_ibm_runtime.fake_provider import *
 from qiskit.providers.models import BackendProperties
 
 # backend = FakeGuadalupe()
