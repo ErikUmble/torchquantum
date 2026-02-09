@@ -77,6 +77,10 @@ class Simple_Model(torch.nn.Module):
         x = self.linear2(x)
         x = F.relu(x)
         x = self.linear3(x)
+
+        # erik: clip to [0, 1]
+        x = torch.clamp(x, 0.0, 1.0)
+
         return x.squeeze()
 
 

@@ -25,6 +25,7 @@ SOFTWARE.
 import pickle
 import random
 import sys
+from typing import Optional
 
 import torch
 from qiskit import QuantumCircuit
@@ -108,6 +109,61 @@ def normalize_data(file_name):
     pickle.dump(data, file)
     file.close()
 
+def normalize_new_data(file_name, meta_file_name: Optional[str] = None):
+    """
+    Normalize the dataset specified by file_name. If meta_file_name is provided,
+    this uses the normalization parameters stored in data/normalized_data/meta_file_name
+    and stores the normalized data in
+    data/normalized_data/file_name + "_n_" + meta_file_name. 
+    Otherwise, it computes the normalization parameters from the dataset itself and saves them to 
+    data/normalized_data/file_name + "meta".
+    Expects file_name to be in data/pyg_data/ (already processed into torch graph form).
+    """
+    file = open("data/pyg_data/" + file_name, "rb")
+    data = pickle.load(file)
+    file.close()
+    if meta_file_name is not None:
+        output_filename = file_name.split(".data")[0] + "_n_" + meta_file_name.split(".datameta")[0] + ".data"
+        file = open("data/normalized_data/" + meta_file_name, "rb")
+        meta = pickle.load(file)
+        file.close()
+        print(meta)
+        print(meta[1])
+        for k, dag in enumerate(data):
+            data[k].x = (dag.x - meta[0]) / (1e-8 + meta[1])
+            data[k].global_features = (dag.global_features - meta[2]) / (1e-8 + meta[3])
+    else:
+        output_filename = file_name
+        all_features = None
+        for k, dag in enumerate(data):
+            if not k:
+                all_features = dag.x
+                global_features = dag.global_features
+                liu_features = dag.liu_features
+            else:
+                all_features = torch.cat([all_features, dag.x])
+                global_features = torch.cat([global_features, dag.global_features])
+                liu_features = torch.cat([liu_features, dag.liu_features])
+
+        means = all_features.mean(0)
+        stds = all_features.std(0)
+        means_gf = global_features.mean(0)
+        stds_gf = global_features.std(0)
+        means_liu = liu_features.mean(0)
+        stds_liu = liu_features.std(0)
+        for k, dag in enumerate(data):
+            data[k].x = (dag.x - means) / (1e-8 + stds)
+            data[k].global_features = (dag.global_features - means_gf) / (
+                1e-8 + stds_gf
+            )
+            data[k].liu_features = (dag.liu_features - means_liu) / (1e-8 + stds_liu)
+        file = open("data/normalized_data/" + file_name + "meta", "wb")
+        pickle.dump([means, stds, means_gf, stds_gf], file)
+        file.close()
+    file = open("data/normalized_data/" + output_filename, "wb")
+    pickle.dump(data, file)
+    file.close()
+
 
 def load_data_and_save(file_name):
     file = open("data/raw_data_qasm/" + file_name, "rb")
@@ -140,3 +196,6 @@ def raw_pyg_converter(dataset):
 if __name__ == "__main__":
     file_name = sys.argv[1]
     dataset = load_data_and_save(file_name)
+    if len(sys.argv) >= 3 and sys.argv[2] == "--normalize":
+        normalization_parameters_file_name = sys.argv[3] if len(sys.argv) >= 4 else None
+        normalize_new_data(file_name, normalization_parameters_file_name)

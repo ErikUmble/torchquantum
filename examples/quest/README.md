@@ -52,6 +52,14 @@ such as using `create_quest_dataset.ipynb`.
 python ./utils/load_data.py data_filename
 ```
 
+Optionally, use the `--normalize` flag to create the normalized form of the dataset based on the normalization
+parameters from a different dataset. For instance,
+```bash
+python ./utils/load_data.py quest_rbf.data --normalize huge.data
+```
+will load the `quest_rbf.data` file and normalize it using the `huge.data` dataset, storing the normalized
+result in `data/normalized_data/quest_rbf_n_huge.data` where the `n_huge` appended to the name signifies the normalization source.
+
 4. Create config directory within `exp`, such as the example `exp/erik` with `config.yaml` in it.
 
 5. Run `python test.py config_dir_name`.

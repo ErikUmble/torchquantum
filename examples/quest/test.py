@@ -4,7 +4,7 @@ from torchpack.utils.config import configs
 import argparse
 from core.datasets import builder
 
-configs.evalmode = False
+configs.evalmode = True
 parser = argparse.ArgumentParser()
 parser.add_argument("exp_name", metavar="FILE", help="config file")
 parser.add_argument("--load", action="store_true", help="config file")
@@ -56,3 +56,18 @@ print(f"Mean Squared Error (MSE):    {mse:.6f}")
 print(f"Root Mean Squared Error:     {rmse:.6f}")
 print(f"Mean Absolute Error (MAE):   {mae:.6f}")
 print(f"Skipped {nan_count} samples due to NaN or Inf predictions.")
+
+# show scatter plot
+import matplotlib.pyplot as plt
+plt.figure(figsize=(8, 8))
+plt.scatter(targets, preds, alpha=0.5)
+plt.plot([0, 1], [0, 1], 'r--')
+plt.xlabel("True Values")
+plt.ylabel("Predictions")
+plt.title("Predictions vs True Values")
+plt.axis('equal')
+plt.grid(True)
+plt.show()
+
+#print(f"Smallest prediction: {preds.min():.6f}, Largest prediction: {preds.max():.6f}")
+#print(f"Smallest target: {targets.min():.6f}, Largest target: {targets.max():.6f}")
