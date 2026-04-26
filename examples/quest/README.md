@@ -39,6 +39,7 @@ Python == 3.10.8
 ```
 
 ## Test Trained Model on New Data
+**Option 1:** Evaluate on a dataset
 1. Collect data into a list of tuples of the form
 ```
 (circuit_qasm2_string, backend.properties().to_dict(), fidelity)
@@ -62,4 +63,20 @@ result in `data/normalized_data/quest_rbf_n_huge.data` where the `n_huge` append
 
 4. Create config directory within `exp`, such as the example `exp/erik` with `config.yaml` in it.
 
-5. Run `python test.py config_dir_name`.
+5. Run
+```bash
+python test.py config_dir_name
+```
+
+6. Or train a model with 
+```bash
+python train.py config_dir_name
+```
+
+**Option 2:** Apply model to one-off predictions.
+1. Pickle a tuple that starts with at least `(circuit_qasm2_string, backend.properties().to_dict(),...)` to a file such as `one_shot.data`.
+
+2. Run 
+```bash
+python eval_one.py --model_path=exp/<...>/model.pth one_shot.data
+```
