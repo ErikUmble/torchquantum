@@ -1,0 +1,32 @@
+dataset:
+  name: qf_v3_transpiled_cv3_train.data
+  split_ratio: [0.9, 0.1, 0.0]  # train on the train export, select on valid; test separately with test.py
+
+model:
+  name: simple
+  use_only_global: False
+  use_global_features: True
+  use_gate_type: True
+  use_qubit_index: True
+  use_T1T2: True
+  use_gate_error: True
+  use_gate_index: True
+  num_layers: 2
+
+num_epochs: 100
+batch_size: 1000
+
+criterion:
+  name: mse
+
+optimizer:
+  name: adam
+  lr: 5.0e-4
+  weight_decay: 1.0e-4
+
+scheduler:
+  name: constant
+
+pdb: False
+
+device: cpu

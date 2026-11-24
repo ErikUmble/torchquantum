@@ -29,7 +29,7 @@ import torch
 from qiskit import QuantumCircuit
 from qiskit.compiler import transpile
 from qiskit.converters import circuit_to_dag
-from qiskit.dagcircuit import DAGInNode, DAGOpNode, DAGOutNode
+from qiskit.dagcircuit import DAGCircuit, DAGInNode, DAGOpNode, DAGOutNode
 from qiskit_ibm_runtime.fake_provider import FakeJakartaV2
 from qiskit.transpiler.passes import RemoveBarriers
 from torch_geometric.utils.convert import from_networkx
@@ -48,7 +48,7 @@ def get_global_features(circ):
 
     return data
 
-def dag_to_networkx(dag: "DAGCircuit") -> nx.DiGraph:
+def dag_to_networkx(dag: DAGCircuit) -> nx.DiGraph:
     """Convert a Qiskit DAGCircuit to a NetworkX DiGraph."""
     G = nx.DiGraph()
     
@@ -60,8 +60,7 @@ def dag_to_networkx(dag: "DAGCircuit") -> nx.DiGraph:
     
     return G
 
-from qiskit.converters import circuit_to_dag, dag_to_circuit
-from collections import OrderedDict
+from qiskit.converters import dag_to_circuit
 
 def remove_idle_qubits(circ):
     dag = circuit_to_dag(circ)
@@ -205,12 +204,14 @@ def networkx_torch_convert(dag, global_features, liu_features):
 
 
 def data_generator(node, mydict, circ_qubits):
+    # Qubit indices returned for the model are circuit-local (idle qubits removed),
+    # but noise is looked up by physical index, which matches the backend properties.
     if isinstance(node, DAGInNode):
-        qubit_idx = circ_qubits.index(node.wire)  # int(node.wire._index)  #change in Qiskit API
-        return "in", [qubit_idx], [mydict["qubit"][qubit_idx]]
+        qubit_idx = circ_qubits.index(node.wire)
+        return "in", [qubit_idx], [mydict["qubit"][node.wire._index]]
     elif isinstance(node, DAGOutNode):
-        qubit_idx = circ_qubits.index(node.wire)  # int(node.wire._index)  #change in Qiskit API
-        return "out", [qubit_idx], [mydict["qubit"][qubit_idx]]
+        qubit_idx = circ_qubits.index(node.wire)
+        return "out", [qubit_idx], [mydict["qubit"][node.wire._index]]
     elif isinstance(node, DAGOpNode):
         name = node.name
         qubit_list = [circ_qubits.index(q) for q in node.qargs]   # circuit-local

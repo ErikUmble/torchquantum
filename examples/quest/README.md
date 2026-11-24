@@ -53,13 +53,17 @@ such as using `create_quest_dataset.ipynb`.
 python ./utils/load_data.py data_filename
 ```
 
-Optionally, use the `--normalize` flag to create the normalized form of the dataset based on the normalization
-parameters from a different dataset. For instance,
+Optionally, use the `--normalize` flag to also create the normalized form of the dataset.
+Without an argument, it computes the normalization parameters from the dataset itself and saves them to `data/normalized_data/<name>meta`.
+With a `.datameta` file, it uses the parameters from a different dataset. For instance,
 ```bash
-python ./utils/load_data.py quest_rbf.data --normalize huge.data
+python ./utils/load_data.py quest_rbf.data --normalize huge.datameta
 ```
-will load the `quest_rbf.data` file and normalize it using the `huge.data` dataset, storing the normalized
+will load the `quest_rbf.data` file and normalize it using the `huge.data` normalization parameters, storing the normalized
 result in `data/normalized_data/quest_rbf_n_huge.data` where the `n_huge` appended to the name signifies the normalization source.
+
+For datasets too large for one pickle file, pass `--batches-dir <dir>` to read every pickled batch in that directory instead of `data/raw_data_qasm/<name>`.
+For logical (untranspiled) circuits, pass `--aggregate-noise` so every qubit and gate gets the device-median noise instead of a per-physical-qubit lookup.
 
 4. Create config directory within `exp`, such as the example `exp/erik` with `config.yaml` in it.
 
